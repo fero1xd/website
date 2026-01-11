@@ -2,6 +2,7 @@ import { Header } from "@/components/header";
 import Welcome from "./blog.mdx";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { revalidateDynamic } from "./actions";
 
 export default function Page() {
   return (
@@ -11,12 +12,13 @@ export default function Page() {
 
         <main className="flex-1 py-16">
           <Link
-            href="/blog"
+            href="/dynamic"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to blog
           </Link>
+          <button onClick={revalidateDynamic}>Revalidate /dynamic</button>
 
           <article className="mt-8">
             <header>

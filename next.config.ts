@@ -2,11 +2,15 @@ import createMdx from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
-  pageExtensions: ["ts", "tsx", "mdx"],
+  pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
 };
 
-const withMdx = createMdx({});
+const withMdx = createMdx({
+  options: {
+    remarkPlugins: ["remark-gfm"],
+    rehypePlugins: [require.resolve("./plugins/rehype.js")],
+  },
+});
 
 export default withMdx(nextConfig);
