@@ -1,0 +1,274 @@
+---
+title: "TypeScript's Type System: Power Tips and Hidden Gems"
+slug: typescript-power-tips
+description: Explore TypeScript's lesser-known type system features—from satisfies and infer to branded types and key remapping.
+---
+
+TypeScript has revolutionized how we write JavaScript, bringing type safety and developer experience improvements that have made it the de facto standard for modern web development. While many developers are familiar with the basics, TypeScript's type system harbors incredible depth. Let's explore some powerful features that often fly under the radar.
+
+## The Foundation: Structural Typing
+
+Unlike nominal type systems (like Java or C#), TypeScript uses structural typing—also known as "duck typing." This means types are compatible based on their structure, not their name. This seemingly simple concept unlocks tremendous flexibility.
+
+```typescript
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Coordinate {
+  x: number;
+  y: number;
+}
+
+const point: Point = { x: 10, y: 20 };
+const coord: Coordinate = point; // Perfectly valid!
+```
+
+Both types are structurally identical, so TypeScript treats them as compatible. This becomes especially powerful when working with third-party libraries or creating flexible APIs.
+
+## Unknown Tip #1: `satisfies` Operator for Type Validation
+
+The `satisfies` operator (introduced in TypeScript 4.9) is a game-changer for maintaining both type safety and precise inference. Unlike type assertions, it validates your value matches a type without widening it.
+
+```typescript
+type Color = "red" | "green" | "blue";
+
+// Without satisfies - type is widened to { [key: string]: string }
+const colors1 = {
+  primary: "red",
+  secondary: "green",
+  accent: "blue"
+};
+
+// With satisfies - preserves literal types AND validates structure
+const colors2 = {
+  primary: "red",
+  secondary: "green",
+  accent: "blue"
+} satisfies Record<string, Color>;
+
+colors2.primary; // Type: "red" (not string!)
+```
+
+This is invaluable for configuration objects where you want validation without sacrificing inference.
+
+## Unknown Tip #2: Template Literal Types
+
+Template literal types let you construct new string literal types using template literal syntax. This enables incredibly expressive type-level string manipulation.
+
+```typescript
+type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
+type Endpoint = "/users" | "/posts" | "/comments";
+
+// Combine them into all possible API routes
+type APIRoute = `${HTTPMethod} ${Endpoint}`;
+// Result: "GET /users" | "GET /posts" | ... | "DELETE /comments"
+
+// Practical example: CSS properties
+type CSSUnit = "px" | "em" | "rem" | "%";
+type Spacing = 0 | 4 | 8 | 12 | 16 | 20 | 24;
+type MarginValue = `${Spacing}${CSSUnit}`;
+
+const margin: MarginValue = "16px"; // Valid
+// const invalid: MarginValue = "16pt"; // Error!
+```
+
+## Unknown Tip #3: `infer` Keyword for Type Extraction
+
+The `infer` keyword in conditional types allows you to extract and capture types, enabling powerful type transformations.
+
+```typescript
+// Extract return type from any function
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+function getUser() {
+  return { id: 1, name: "Alice", email: "alice@example.com" };
+}
+
+type User = ReturnType<typeof getUser>;
+// Type: { id: number; name: string; email: string; }
+
+// Extract array element type
+type Unpack<T> = T extends (infer U)[] ? U : T;
+
+type StringArray = Unpack<string[]>; // string
+type NumberType = Unpack<number>;    // number
+
+// Extract promise value type
+type Awaited<T> = T extends Promise<infer U> ? U : T;
+
+type AsyncUser = Awaited<Promise<User>>; // User
+```
+
+## Unknown Tip #4: Const Assertions for Immutable Values
+
+Use `as const` to create deeply readonly values with the most specific type possible. This is incredibly useful for configuration objects and lookup tables.
+
+```typescript
+// Without const assertion
+const routes1 = {
+  home: "/",
+  about: "/about",
+  contact: "/contact"
+};
+// Type: { home: string; about: string; contact: string; }
+
+// With const assertion
+const routes2 = {
+  home: "/",
+  about: "/about",
+  contact: "/contact"
+} as const;
+// Type: { readonly home: "/"; readonly about: "/about"; readonly contact: "/contact"; }
+
+// This enables type-safe lookups
+type RouteKey = keyof typeof routes2; // "home" | "about" | "contact"
+type RoutePath = typeof routes2[RouteKey]; // "/" | "/about" | "/contact"
+```
+
+## Unknown Tip #5: Discriminated Unions for Type-Safe State
+
+Discriminated unions (also called tagged unions) provide a foolproof way to model state machines and complex domain logic with complete type safety.
+
+```typescript
+type LoadingState = {
+  status: "loading";
+};
+
+type SuccessState<T> = {
+  status: "success";
+  data: T;
+};
+
+type ErrorState = {
+  status: "error";
+  error: string;
+};
+
+type AsyncState<T> = LoadingState | SuccessState<T> | ErrorState;
+
+function handleState<T>(state: AsyncState<T>) {
+  // TypeScript narrows the type based on discriminant
+  if (state.status === "loading") {
+    return "Loading...";
+  }
+  
+  if (state.status === "success") {
+    // TypeScript knows state.data exists here
+    return state.data;
+  }
+  
+  // TypeScript knows state.error exists here
+  return `Error: ${state.error}`;
+}
+```
+
+## Unknown Tip #6: Mapped Types with Key Remapping
+
+You can transform object types using mapped types, and even remap keys in the process using the `as` clause.
+
+```typescript
+// Add 'get' prefix to all properties
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+interface User {
+  name: string;
+  age: number;
+  email: string;
+}
+
+type UserGetters = Getters<User>;
+// Result: {
+//   getName: () => string;
+//   getAge: () => number;
+//   getEmail: () => string;
+// }
+
+// Remove specific properties
+type OmitByType<T, V> = {
+  [K in keyof T as T[K] extends V ? never : K]: T[K];
+};
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+}
+
+type ProductStrings = OmitByType<Product, number>;
+// Result: { name: string; description: string; }
+```
+
+## Unknown Tip #7: Branded Types for Additional Safety
+
+Branded types (or nominal types) prevent mixing values that are structurally identical but semantically different.
+
+```typescript
+// Create distinct types even though they're both numbers
+type UserId = number & { __brand: "UserId" };
+type ProductId = number & { __brand: "ProductId" };
+
+function createUserId(id: number): UserId {
+  return id as UserId;
+}
+
+function createProductId(id: number): ProductId {
+  return id as ProductId;
+}
+
+function getUser(id: UserId) {
+  console.log(`Fetching user ${id}`);
+}
+
+const userId = createUserId(123);
+const productId = createProductId(456);
+
+getUser(userId);       // Valid
+// getUser(productId); // Error: ProductId is not assignable to UserId
+// getUser(123);       // Error: number is not assignable to UserId
+```
+
+This prevents accidental mixing of IDs, which is a common source of bugs in real applications.
+
+## The Power of Utility Types
+
+TypeScript ships with powerful utility types that solve common problems. Here are some lesser-known combinations:
+
+```typescript
+// Make specific properties optional
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  publishedAt: Date;
+}
+
+type ArticleDraft = PartialBy<Article, "id" | "publishedAt">;
+// Result: { title: string; content: string; id?: string; publishedAt?: Date; }
+
+// Require at least one property
+type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = 
+  Pick<T, Exclude<keyof T, Keys>> & 
+  { [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>> }[Keys];
+
+type ContactMethod = {
+  email?: string;
+  phone?: string;
+  twitter?: string;
+};
+
+type ValidContact = RequireAtLeastOne<ContactMethod>;
+// Must have at least one of email, phone, or twitter
+```
+
+## Conclusion
+
+TypeScript's type system is remarkably expressive and continues to evolve with each release. These advanced features enable you to encode complex business logic directly into your types, catching entire classes of bugs at compile time rather than runtime. The investment in learning these patterns pays dividends in code quality, maintainability, and developer confidence.
+
+Start incorporating these patterns into your codebase gradually. You'll find that with practice, thinking in types becomes second nature, and your code becomes more self-documenting and robust. The type system isn't just a safety net—it's a powerful tool for designing better APIs and expressing intent clearly.

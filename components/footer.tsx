@@ -9,15 +9,15 @@ export async function Footer() {
         </p>
         <div className="flex items-center gap-6">
           <a
-            href="https://twitter.com"
+            href="https://twitter.com/pranjal_fxd_"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            Twitter
+            X
           </a>
           <a
-            href="https://github.com"
+            href="https://github.com/fero1xd"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -25,7 +25,7 @@ export async function Footer() {
             GitHub
           </a>
           <a
-            href="mailto:hello@alexchen.dev"
+            href="mailto:pranjalbutola12@gmail.com"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Email

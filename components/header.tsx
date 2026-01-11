@@ -1,36 +1,59 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { ClassValue } from "clsx";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ComponentProps, ReactNode } from "react";
 
 export function Header() {
+  const pathname = usePathname();
+
   return (
     <header className="py-8 border-b border-border">
       <nav className="flex items-center justify-between">
-        <Link
-          href="/"
-          className="font-mono text-sm tracking-tight hover:text-primary transition-colors"
-        >
+        <NavLink href="/" className="font-mono tracking-tight">
           alex.chen
-        </Link>
+        </NavLink>
         <div className="flex items-center gap-6">
-          <Link
-            href="/work"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
+          <NavLink href="/work" className="font-mono text-muted-foreground">
             Work
-          </Link>
-          <Link
-            href="/blog"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
+          </NavLink>
+          <NavLink href="/blog" className="font-mono text-muted-foreground">
             Blog
-          </Link>
-          <Link
-            href="/about"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
+          </NavLink>
+          <NavLink href="/about" className="font-mono text-muted-foreground">
             About
-          </Link>
+          </NavLink>
         </div>
       </nav>
     </header>
+  );
+}
+
+type X = React.AnchorHTMLAttributes<HTMLAnchorElement>;
+
+function NavLink({
+  href,
+  children,
+  className,
+  ...props
+}: {
+  children: ReactNode;
+  href: string;
+} & ComponentProps<typeof Link>) {
+  const pathname = usePathname();
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "text-sm hover:text-primary transition-colors",
+        className,
+        pathname.startsWith(href) && "text-primary"
+      )}
+      {...props}
+    >
+      {children}
+    </Link>
   );
 }
