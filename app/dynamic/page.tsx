@@ -28,7 +28,7 @@ async function Body() {
 }
 
 async function sampleFetch() {
-  "use cache: remote";
+  "use cache";
   cacheTag("dynamic-page");
   await fetch("https://google.com");
 }
