@@ -8,8 +8,6 @@ export const MDXContent = ({ source }: { source: string }) => {
       source={source}
       components={{
         ...mdxComponents,
-        pre: mdxComponents.pre,
-        blockquote: mdxComponents.blockquote,
       }}
       options={{
         mdxOptions: {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { BlogCard } from "@/components/blog-card";
+import { EmptyState } from "@/components/empty-state";
 import { posts } from "@/.velite";
 
 export const metadata: Metadata = {
@@ -32,16 +33,20 @@ export default function BlogPage() {
               Blog
             </h1>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Thoughts on design, development, and the craft of building digital
-              products.
+              Just writing about whatever I'm into at the moment.
             </p>
           </section>
 
           <section className="mt-12">
             <div>
-              {posts.map((post) => (
-                <BlogCard key={post.slug} {...post} />
-              ))}
+              {posts.length > 0 ? (
+                posts.map((post) => <BlogCard key={post.slug} {...post} />)
+              ) : (
+<EmptyState
+                    title="No blog posts yet"
+                    description="Check back soon for thoughts on design and development"
+                  />
+              )}
             </div>
           </section>
         </main>

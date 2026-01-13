@@ -46,6 +46,7 @@ export default defineConfig({
       schema: s.object({
         title: s.string().max(99), // Zod primitive type
         description: s.string(),
+
         raw: s.raw(),
         date: timestamp(),
         slug: slug(),

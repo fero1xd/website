@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const title = searchParams.get("title")
-    ? `${searchParams.get("title")}  · Pranjal Butola`
+    ? `${searchParams.get("title")}`
     : "Pranjal Butola";
   const description = searchParams.get("description") || "Designer & Developer";
 

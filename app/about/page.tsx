@@ -1,5 +1,6 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { EmptyState } from "@/components/empty-state";
 
 export default function AboutPage() {
   return (
@@ -16,21 +17,19 @@ export default function AboutPage() {
 
           <section className="mt-8 space-y-6">
             <p className="text-muted-foreground leading-relaxed">
-              I'm Alex Chen, a designer and developer based in San Francisco. I
-              specialize in creating minimal, functional digital experiences
-              that prioritize clarity and user needs.
+              I'm Pranjal Butola, a 19 year old university student based in
+              Uttarakhand, India.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Currently, I'm a Senior Product Designer at{" "}
-              <span className="text-primary">Studio</span>, where I lead design
-              for our core product experience. Previously, I worked with
-              startups and agencies helping them build products from zero to
-              one.
+              Currently in my second year, I spend most of my time diving into
+              backend engineering and figuring out how things work under the
+              hood.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              When I'm not designing, I write about the craft on my blog,
-              contribute to open-source projects, and experiment with new
-              technologies and creative tools.
+              When I'm not coding or studying, I'm usually playing video games
+              or writing about whatever I'm into at the moment, whether that's a
+              new tech stack I'm exploring or something completely random things
+              that caught my attention.
             </p>
           </section>
 
@@ -39,6 +38,12 @@ export default function AboutPage() {
               Experience
             </h2>
             <div className="mt-6 space-y-6">
+              <EmptyState
+                title="No Experience"
+                description="Ideally, you wouldn't be seeing this"
+              />
+            </div>
+            {/* <div className="mt-6 space-y-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-base font-medium">
@@ -68,7 +73,7 @@ export default function AboutPage() {
                   2018–20
                 </span>
               </div>
-            </div>
+            </div> */}
           </section>
 
           <section className="mt-12">
@@ -79,19 +84,19 @@ export default function AboutPage() {
               <p className="text-muted-foreground leading-relaxed">
                 Feel free to reach out at{" "}
                 <a
-                  href="mailto:hello@alexchen.dev"
+                  href="mailto:pranjalbutola12@gmail.com"
                   className="text-primary hover:underline"
                 >
-                  hello@alexchen.dev
+                  pranalbutola12@gmail.com
                 </a>{" "}
                 or connect on{" "}
                 <a
-                  href="https://twitter.com"
+                  href="https://x.com/pranjal_fxd_"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Twitter
+                  X
                 </a>
                 .
               </p>
