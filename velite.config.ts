@@ -1,6 +1,5 @@
-import { defineConfig, defineSchema, s } from "velite";
 import { stat } from "fs/promises";
-import rehypeShiki from "@shikijs/rehype";
+import { defineConfig, defineSchema, s } from "velite";
 
 const timestamp = defineSchema(() =>
   s
