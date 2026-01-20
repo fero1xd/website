@@ -1,6 +1,6 @@
 import { posts } from "@/.velite";
 
-export function getRecentPosts() {
+function getRecentPosts() {
   if (posts.length === 0) return [];
 
   return [...posts]
@@ -11,3 +11,5 @@ export function getRecentPosts() {
     })
     .slice(0, 3);
 }
+
+export const recentPosts = getRecentPosts();

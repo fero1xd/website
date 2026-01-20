@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { MDXComponents } from "mdx/types";
 import { Children, isValidElement, type ReactNode } from "react";
 import { codeToHtml } from "shiki";

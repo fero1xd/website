@@ -1,14 +1,20 @@
-import { posts } from "@/.velite";
+import { posts, posts as rawPosts } from "@/.velite";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { MDXContent } from "@/components/mdx/content";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 
 export async function generateStaticParams() {
-  return posts.map(({ slug }) => ({
-    slug,
-  }));
+  return [
+    ...rawPosts.map(({ slug }) => ({
+      slug,
+    })),
+    {
+      slug: "__dummy__",
+    },
+  ];
 }
 
 export async function generateMetadata({
@@ -47,22 +53,12 @@ export default async function BlogPostPage({
   params,
 }: PageProps<"/blog/[slug]">) {
   "use cache";
-
   const { slug } = await params;
+
   const post = posts.find((p) => p.slug === slug);
 
-  if (!post) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <div className="max-w-xl mx-auto w-full px-6 flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 py-16">
-            <p className="text-muted-foreground">Post not found.</p>
-          </main>
-          <Footer />
-        </div>
-      </div>
-    );
+  if (!post || slug === "__dummy__") {
+    notFound();
   }
 
   return (

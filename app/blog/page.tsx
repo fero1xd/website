@@ -42,10 +42,10 @@ export default function BlogPage() {
               {posts.length > 0 ? (
                 posts.map((post) => <BlogCard key={post.slug} {...post} />)
               ) : (
-<EmptyState
-                    title="No blog posts yet"
-                    description="Check back soon for thoughts on design and development"
-                  />
+                <EmptyState
+                  title="No blog posts yet"
+                  description="Check back soon for thoughts on design and development"
+                />
               )}
             </div>
           </section>

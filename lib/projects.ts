@@ -5,29 +5,15 @@ export type Project = {
   year: number;
   href: string;
 };
+
+const baseUrl = `https://github.com/fero1xd`;
+
 export const projects: Project[] = [
   {
-    title: "Minimal Design System",
-    description:
-      "A comprehensive design system built for scalability and consistency across products.",
-    year: 2024,
-    href: "#",
-    tags: ["React", "TypeScript", "Storybook", "Figma"],
-  },
-  {
-    title: "Focus — Productivity App",
-    description:
-      "A distraction-free writing and task management application for creative professionals.",
-    year: 2024,
-    href: "#",
-    tags: ["Next.js", "TypeScript", "Supabase", "Tailwind"],
-  },
-  {
-    title: "Drift Music Player",
-    description:
-      "A minimal music streaming interface with gesture-based controls and ambient visuals.",
-    year: 2023,
-    href: "#",
-    tags: ["React", "Web Audio API", "Framer Motion"],
+    title: "UTF-8 parser",
+    description: "A simple utf-8 parser written in C",
+    tags: ["Misc"],
+    year: 2026,
+    href: `${baseUrl}/utf8-parser`,
   },
 ];

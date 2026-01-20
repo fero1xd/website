@@ -1,9 +1,12 @@
 import { Project } from "@/lib/projects";
-import Link from "next/link";
 
 export function ProjectCard({ title, description, year, href, tags }: Project) {
   return (
-    <Link href={href} className="group block py-6 border-b border-border">
+    <a
+      href={href}
+      className="group block py-6 border-b border-border"
+      target="_blank"
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="text-base font-medium group-hover:text-primary transition-colors">
@@ -29,6 +32,6 @@ export function ProjectCard({ title, description, year, href, tags }: Project) {
           {year}
         </span>
       </div>
-    </Link>
+    </a>
   );
 }

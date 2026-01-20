@@ -10,17 +10,19 @@ export function RecentProjectsSection() {
       <h2 className="text-sm text-muted-foreground uppercase tracking-wider">
         Recent Projects
       </h2>
-      <div className="mt-6">
+      <div className="mt-3">
         {projects.slice(0, 3).map((project) => (
           <ProjectCard key={project.title} {...project} />
         ))}
       </div>
-      <Link
-        href="/projects"
-        className="inline-block mt-6 text-sm text-primary hover:underline underline-offset-4"
-      >
-        View all projects →
-      </Link>
+      {projects.length > 3 ? (
+        <Link
+          href="/projects"
+          className="inline-block mt-6 text-sm text-primary hover:underline underline-offset-4"
+        >
+          View all projects →
+        </Link>
+      ) : null}
     </section>
   );
 }

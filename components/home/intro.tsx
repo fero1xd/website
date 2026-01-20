@@ -7,7 +7,7 @@ export function IntroSection() {
         Hi, I am <span className="text-primary">Pranjal!</span>
       </h1>
       <p className="mt-4 text-muted-foreground leading-relaxed">
-        I am a 19-year-old Computer Science enthusiast from India, currently
+        I am a 19 year old Computer Science enthusiast from India, currently
         focused on backend engineering, but I enjoy exploring other technologies
         as well. I also enjoy writing blog posts about what I'm learning along
         the way.

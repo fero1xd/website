@@ -23,7 +23,7 @@ export default function ProectsPage() {
 
           <section className="mt-12">
             <div>
-              {projects.length < 0 ? (
+              {projects.length > 0 ? (
                 projects.map((project) => (
                   <ProjectCard key={project.title} {...project} />
                 ))
