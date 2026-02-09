@@ -2,9 +2,10 @@ import { posts, posts as rawPosts } from "@/.velite";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { MDXContent } from "@/components/mdx/content";
+import { ArrowLeft } from "geist-icons";
 import { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ViewTransition } from "react";
 
 export async function generateStaticParams() {
   return [
@@ -67,9 +68,15 @@ export default async function BlogPostPage({
         <Header />
 
         <main className="flex-1 py-16">
-          <article className="">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Back to blog
+          </Link>
+          <article className="mt-8">
             <header>
-              <ViewTransition name={`title-${post.slug}`}>
                 <time className="text-sm font-mono text-muted-foreground">
                   {new Date(post.date).toLocaleDateString("en-US", {
                     month: "long",
@@ -77,12 +84,9 @@ export default async function BlogPostPage({
                     year: "numeric",
                   })}
                 </time>
-              </ViewTransition>
-              <ViewTransition name={`time-${post.slug}`}>
                 <h1 className="mt-2 text-3xl font-bold tracking-tight text-primary">
                   {post.title}
                 </h1>
-              </ViewTransition>
             </header>
 
             <div className="mt-8 prose dark:prose-invert prose-h1:text-2xl min-w-full">

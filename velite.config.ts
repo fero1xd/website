@@ -49,6 +49,8 @@ export default defineConfig({
         raw: s.raw(),
         date: timestamp(),
         slug: slug(),
+
+        tags: s.array(s.string()).optional(),
       }),
     },
   },

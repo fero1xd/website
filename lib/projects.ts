@@ -11,8 +11,9 @@ const baseUrl = `https://github.com/fero1xd`;
 export const projects: Project[] = [
   {
     title: "UTF-8 parser",
-    description: "A simple utf-8 parser written in C",
-    tags: ["Misc"],
+    description:
+      "A simple utf-8 parser written in C that parses unicode codepoints",
+    tags: ["Misc", "C"],
     year: 2026,
     href: `${baseUrl}/utf8-parser`,
   },

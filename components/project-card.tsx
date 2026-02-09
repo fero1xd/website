@@ -12,7 +12,7 @@ export function ProjectCard({ title, description, year, href, tags }: Project) {
           <h3 className="text-base font-medium group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             {description}
           </p>
           {tags.length > 0 && (
