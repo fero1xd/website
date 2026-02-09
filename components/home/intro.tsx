@@ -1,10 +1,16 @@
+import { cn } from "@/lib/utils";
+import { CodeBracket, LogoGithub, LogoTwitterX } from "geist-icons";
+import { GeistPixelSquare } from "geist/font/pixel";
 import Link from "next/link";
-import { LogoGithub, LogoTwitterX } from "geist-icons";
+
 export function IntroSection() {
   return (
     <section>
-      <h1 className="text-2xl font-bold tracking-tight">
-        Hi, I am <span className="text-primary">Pranjal!</span>
+      <h1 className={cn("text-2xl tracking-tight", GeistPixelSquare.className)}>
+        Hi, I am{" "}
+        <span className="text-primary">
+          Pranjal! <CodeBracket className="inline" />
+        </span>
       </h1>
       <p className="mt-4 text-muted-foreground leading-relaxed">
         I am a 19 year old Computer Science enthusiast from India, currently

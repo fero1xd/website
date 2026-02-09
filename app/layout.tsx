@@ -47,9 +47,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans antialiased`}>
-        <ViewTransition>
-          <main suppressHydrationWarning>{children}</main>
-        </ViewTransition>
+        {/* <ViewTransition> */}
+        <main suppressHydrationWarning>{children}</main>
+        {/* </ViewTransition> */}
         <Analytics />
       </body>
     </html>
