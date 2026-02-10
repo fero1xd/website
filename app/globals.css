@@ -83,6 +83,7 @@
   /* Set Geist Mono as the main sans font for stylized look */
   --font-sans: "Geist Mono", "Geist Mono Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-geist-sans: "Geist", "Geist Sans Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -136,7 +137,7 @@
 
 
 .prose pre {
-  @apply overflow-x-auto border border-neutral-800 bg-[#111] my-4 rounded-none;
+  @apply overflow-x-auto border border-neutral-800 bg-[#111] my-4 rounded-none relative;
 }
 
 .prose code:not(pre code) {
@@ -149,9 +150,9 @@
 }
 
 .prose pre code {
-  @apply p-4 block bg-transparent;
+  @apply p-4 inline-block min-w-full bg-transparent;
   border: initial;
-  line-height: 1.6;
+  line-height: 2;
 }
 
 .prose code span {
@@ -197,10 +198,29 @@ hr {
   @apply tracking-wide underline-offset-2;
 }
 
+
 .prose li::marker {
   color: var(--color-accent);
 }
 
-.prose p {
-  @apply text-foreground/70;
+
+pre.shiki .highlighted-word {
+  @apply bg-accent/10 border border-accent/50;
+
+	padding: 1px 3px;
+	margin: -1px -3px;
+	border-radius: 4px;
+}
+
+pre.shiki .highlighted-line {
+  @apply -mx-8 px-8 py-1 inline-block bg-accent/10 min-w-[calc(100%+4rem)];
+}
+
+pre.shiki .highlighted-line + .highlighted-line {
+  @apply pt-0;
+}
+
+pre.shiki .highlighted-line:has(+ .highlighted-line) {
+  @apply pb-0;
+
 }

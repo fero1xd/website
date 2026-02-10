@@ -1,0 +1,296 @@
+---
+title: "Why I Started Using Effect.ts"
+description: "An honest look at Effect.ts, what it is, what problem it actually solves, and whether it's worth the learning curve."
+date: "2026-02-09"
+tags: ["typescript", "effect"]
+published: true
+---
+
+For the longest time, I dismissed [Effect.ts](https://effect.website). "Oh great, another batteries-included framework that I don't need." I'd seen enough of those come and go. My codebase was "working fine" with plain TypeScript—if by "fine" you mean I spent half my time writing try-catch blocks and the other half debugging why my async functions were swallowing errors in production.
+
+I had this one bug last year that kept me up until 3 AM. A payment processing function was failing silently. No error logs, no nothing. Just... nothing happening. Turned out a `.catch()` handler was returning `undefined` instead of throwing, and three layers up the chain something else was expecting a result that never came. Classic.
+
+So when I kept hearing about Effect on Twitter, I figured I'd give it a shot. Worst case, I'd waste a weekend.
+
+It didn't click immediately. The first hour was just confusion—why do I need generators? What's with all these type parameters? I almost gave up. But I kept going because I'd already sunk time into it and I'm stubborn like that.
+
+Around hour three, something shifted. I was rewriting a fetch wrapper and realized the compiler was forcing me to handle a network error I'd have normally ignored. That tiny moment—seeing the red squiggly line where a silent bug would have lived—was when I got it.
+
+Look, I'm not here to sell you on Effect. It's not a magic bullet, and there are legitimate reasons you might not want it. But if you're tired of 3 AM debugging sessions because some Promise rejected in a way you didn't anticipate, or if you've ever stared at `Promise<User>` wondering "what could possibly go wrong here?" only to find out the answer is "literally everything," keep reading.
+
+I'll show you what Effect actually does, how it works in practice, and the real downsides nobody talks about. By the end, you'll know if it's worth the learning curve for your situation.
+
+## The Real Problem Effect Solves
+
+Here's the uncomfortable truth about TypeScript: the types lie to you. Not intentionally, but they do.
+
+```typescript
+async function getUser(id: string): Promise<User> {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+}
+```
+
+Looks clean. TypeScript says it returns `Promise<User>`. I've written code like this a thousand times. And every single time, I've been kidding myself.
+
+Last month I deployed something almost identical. The API team changed a field name from `userId` to `id` without telling anyone. My code? It happily returned `Promise<User>` except the `id` field was undefined. Downstream, another service tried to use that ID to fetch permissions. You can guess what happened next—production error, 2 AM page, angry Slack messages.
+
+What can actually go wrong here? Let me count:
+- Network is down (obvious)
+- DNS resolution fails (seen it)
+- Server returns 404 (yep)
+- Server returns 500 with HTML error page instead of JSON (all the time)
+- JSON is malformed (rare but happens)
+- Request times out (default is like 5 minutes, who thought that was a good idea?)
+- CORS headers missing (the bane of my existence)
+
+TypeScript cheerfully tells you this returns `Promise<User>` and you're supposed to just... trust that? The type system has no idea what can actually fail. It's not TypeScript's fault—JavaScript was built in 10 days and error handling was an afterthought. But that doesn't help me at 2 AM when I'm debugging why `user.id` is undefined.
+
+## Enter the Effect Type
+
+Effect's big idea isn't complicated: make errors part of the type signature. Instead of `Promise<User>`, you get this:
+
+```typescript
+Effect<User, NetworkError | ParseError, never>
+```
+
+Three things: success type, error types, and dependencies. That's the whole pitch.
+
+The first time I saw this I thought it was overkill. "I already handle errors," I told myself. But then I looked at my actual code and realized I was lying. I had try-catch blocks, sure, but half of them just logged and re-threw. Or worse, returned `null` and let something else deal with it.
+
+Here's that same function with Effect:
+
+```typescript
+const getUser = (id: string): Effect.Effect<User, NetworkError | NotFoundError> =>
+  Effect.tryPromise({
+    try: () => fetch(`/api/users/${id}`).then(r => r.json()),
+    catch: (e) => new NetworkError({ cause: e })
+  });
+```
+
+Look at that type signature. It tells you upfront: this can fail with a network error or a not-found error. If you try to use `getUser` without handling those cases, TypeScript will complain. Loudly. With specific error messages about which errors you forgot.
+
+I know, I know—it feels like ceremony. But that ceremony caught a bug in my code on day one. I was calling `getUser` in a component and forgot to handle the `NotFoundError` case. The red squiggly line appeared immediately. In my old code, that would have been a runtime error in production.
+
+## Writing Effect Code
+
+Here's where things get weird. Effect uses generators, which feels like stepping back to 2015:
+
+```typescript
+import { Effect } from "effect";
+
+const program = Effect.gen(function* () { // [!code hl:4]
+  const user = yield* getUser("123");
+  const posts = yield* getUserPosts(user.id);
+  
+  return { user, posts };
+});
+```
+
+Yeah, generators. I had the same reaction: "Aren't we past this?" Turns out they're a clever hack. Each `yield*` works like `await`, but TypeScript can track the error types through the generator in a way it can't with async/await.
+
+In that example above, if `getUser` can fail with `NetworkError` and `getUserPosts` can fail with `DatabaseError`, the final `program` has type `Effect<{user, posts}, NetworkError | DatabaseError, never>`. The compiler knows about every possible failure. You can't hide errors in a catch block that just re-throws or returns null—they're right there in the type.
+
+The first time I used this in a real feature, I spent 20 minutes just looking at the type errors and thinking "I guess I do need to handle that case." It was annoying. It was also correct.
+
+## Actually Running Your Effects
+
+Here's something that confused me for way too long: **Effect values don't do anything until you run them.**
+
+I spent an hour debugging why my database query wasn't executing, only to realize I'd defined the Effect but never actually called a runner function. It's like defining a Promise but never calling `.then()` or `await`—the code just sits there, lazy and unexecuted.
+
+This is actually a feature, not a bug. Effects are lazy by design. You can compose them, transform them, pass them around, and they remain just a description of work to be done. Nothing happens until you explicitly say "go."
+
+### The Run Functions
+
+Effect gives you several ways to execute your programs, depending on what you need:
+
+**`Effect.runPromise`** - This is what you'll use 90% of the time. It runs your effect and returns a regular JavaScript Promise:
+
+```typescript
+const program = Effect.gen(function* () {
+  const user = yield* getUser("123");
+  return user.name;
+});
+
+// This actually executes the effect
+const name = await Effect.runPromise(program);
+console.log(name); // "John Doe"
+```
+
+If your effect fails, `runPromise` will reject with the error (wrapped in a `FiberFailure`). This is great for integrating with existing async code but means you need to handle rejections.
+
+**`Effect.runSync`** - Only works for fully synchronous effects. I tried using this on an async effect once and got a confusing error about fibers. Stick to `runPromise` unless you're absolutely sure there's no async work happening.
+
+**`Effect.runSyncExit` and `Effect.runPromiseExit`** - These return an `Exit` type instead of throwing. The Exit tells you whether the effect succeeded or failed without throwing exceptions:
+
+```typescript
+const exit = await Effect.runPromiseExit(program);
+
+if (Exit.isSuccess(exit)) {
+  console.log("Success:", exit.value);
+} else {
+  console.log("Failed:", exit.cause);
+}
+```
+
+I use this in tests a lot because it lets me assert on failures without try-catch gymnastics.
+
+### Why This Separation Matters
+
+At first, having to call a separate "run" function felt like unnecessary ceremony. But it's actually powerful:
+
+1. **Your business logic stays pure** - All your functions return Effects describing what to do, not actually doing it. This makes them trivial to test.
+
+2. **You control execution at the edges** - The recommendation is to keep most of your code as Effects and only call `runPromise` at the "edge" of your application (like in your Express route handler or CLI entry point).
+
+3. **Composability** - Because Effects are just values, you can pass them around, store them in arrays, conditionally choose between them, all before any work happens.
+
+Here's how I structure a typical API route:
+
+```typescript
+// All my logic is pure Effect code
+const getUserHandler = (userId: string) =>
+  Effect.gen(function* () {
+    const user = yield* getUser(userId);
+    const permissions = yield* getPermissions(user.id);
+    return { user, permissions };
+  });
+
+// Only at the edge do I run it
+app.get("/users/:id", async (req, res) => {
+  const program = getUserHandler(req.params.id);
+  
+  try {
+    const result = await Effect.runPromise(program);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+```
+
+The key insight: your Effect code is a blueprint. The `run*` functions are the construction crew that actually builds the thing. Keep them separate, and your code becomes much more flexible and testable.
+
+## Composition Is Where It Clicks
+
+This is where I actually started enjoying Effect. Once you have typed effects, you can compose them without the usual callback hell.
+
+Take retries. I used to write retry logic manually. It always started simple—"just try again if it fails"—and ended up as 50 lines of setTimeout spaghetti. With Effect:
+
+```typescript
+import { Effect, Schedule } from "effect";
+
+const resilientGetUser = getUser("123").pipe(
+  Effect.retry(Schedule.exponential("100 millis").pipe(
+    Schedule.compose(Schedule.recurs(3))
+  ))
+);
+```
+
+Three retries with exponential backoff. One line. No state variables, no setTimeout cleanup, no "did I increment the counter?" bugs.
+
+Need a timeout? Chain it:
+
+```typescript
+const withTimeout = getUser("123").pipe(
+  Effect.timeout("5 seconds")
+);
+```
+
+Need a fallback? Easy:
+
+```typescript
+const withFallback = getUser("123").pipe(
+  Effect.catchAll(() => Effect.succeed(defaultUser))
+);
+```
+
+Here's the cool part: the types track everything. After adding `catchAll`, the error type becomes `never` because you've handled all errors. After adding `timeout`, you get a `TimeoutError` added to the error type. You can see exactly what can still fail just by looking at the type.
+
+I built a whole API client this way. Retries, timeouts, circuit breakers, fallbacks—all composed together. Each piece is testable in isolation. No global state. No "oh right I need to clean up that interval." It just works.
+
+## What Else Can Effect Do
+
+Effect is way bigger than just error handling. At first I thought that was bloat—"why do I need all this?"—but then I started using the other parts and realized they solve problems I'd been hacking around for years.
+
+**Dependency injection** is built into the type system. I used to pass config objects through five layers of functions just to get a database connection to where I needed it. With Effect, you define a service interface:
+
+```typescript
+interface Database {
+  readonly query: (sql: string) => Effect.Effect<unknown[], DatabaseError>
+}
+```
+
+Then your code declares it needs a Database, and the compiler makes sure you provide one before running. For tests, swap in a mock. The types guarantee you can't forget. I spent a week refactoring a codebase to use this and deleted maybe 200 lines of boilerplate.
+
+**Effect Platform** handles the runtime differences. I have code that runs the same on Node (work) and Bun (personal projects) without changes. File system operations, HTTP clients, environment variables—it all abstracts away. I wrote a CLI tool with it and didn't have to think about whether `fs/promises` works the same in both runtimes.
+
+**Structured concurrency** means no more "oops I forgot to clear that interval." Resources get cleaned up properly, even when things fail halfway through. I had a data processing script that was leaking memory because of unhandled Promise rejections. Effect fixed that without me changing the logic—just wrapped it in the right primitives.
+
+There's also Schema for validation (replaces Zod for me), RPC for type-safe APIs, and a bunch more. I don't use everything, but it's nice having one ecosystem instead of ten different libraries with incompatible error handling.
+
+## The Honest Downsides
+
+Let me be straight with you: Effect isn't all sunshine and roses.
+
+**Bundle size** is the big one. My last project added about 180KB (gzipped) just from Effect and its dependencies. For a backend service, who cares? For a landing page with a contact form, that's ridiculous. If you're building something where Lighthouse scores matter, think twice. Effect v4 promises to fix this with better tree-shaking, but it's not here yet.
+
+**The learning curve is steep.** I spent two full weekends just getting comfortable with the basics. My first attempt at refactoring a real feature took three days and I broke half the tests. The error messages can be... verbose. You'll see types like `Effect<SomeType, NetworkError | ParseError | ValidationError | TimeoutError, HttpClient | Logger | Database>` and your eyes will glaze over.
+
+**Your team matters.** I tried introducing Effect to a team of five. Two people loved it immediately. Two were skeptical but came around after a month. One person never got comfortable and kept reaching for plain Promises. We ended up with a codebase that was half-Effect, half-regular TypeScript, which was worse than either alone. You need buy-in from everyone, or at least tolerance from those who don't want to learn.
+
+**The ecosystem lock-in is real.** Once you start using Effect, everything wants to be an Effect. Your utilities, your React hooks, your test setup—it all has to speak the same language. Mixing Effect with regular async code is possible but annoying. You're not just adopting a library, you're adopting a way of writing code.
+
+**Debugging can be weird.** The stack traces go through Effect's internals. It's getting better, but you'll still see 20 frames of library code before you get to your actual function. Source maps help, but it's not as straightforward as regular async/await.
+
+I'm not trying to scare you off. I use Effect daily and I'm glad I made the switch. But go in with your eyes open.
+
+## Getting Started
+
+```bash
+npm install effect
+```
+
+Don't rewrite your whole app. Please. I tried that and it was a disaster.
+
+Instead, pick one small, annoying function. Maybe that fetch wrapper that's been throwing uncaught errors. Or the file parser that keeps returning weird data. Rewrite just that one thing.
+
+Here's a complete example you can run:
+
+```typescript
+import { Effect, Console } from "effect";
+
+// A simple operation that can fail
+const divide = (a: number, b: number) =>
+  b === 0
+    ? Effect.fail(new Error("Cannot divide by zero"))
+    : Effect.succeed(a / b);
+
+// Compose it into a program
+const program = Effect.gen(function* () {
+  const result = yield* divide(10, 2);
+  yield* Console.log(`Result: ${result}`);
+  
+  // Try dividing by zero to see error handling
+  const badResult = yield* divide(10, 0).pipe(
+    Effect.catchAll((error) => {
+      Console.log(`Caught error: ${error.message}`);
+      return Effect.succeed(0); // Return a default
+    })
+  );
+  
+  yield* Console.log(`Recovered with: ${badResult}`);
+});
+
+// Run it
+Effect.runPromise(program);
+```
+
+Play with that. Change things. See how the types react. Add more operations. Get a feel for it before touching production code.
+
+The [documentation](https://effect.website/docs/introduction) is solid. I know I keep saying this, but seriously, read it. The Discord is active and helpful too—I've asked dumb questions there and people actually answered without making me feel dumb.
+
+Effect isn't for everyone. If you're shipping prototypes fast or working on tiny scripts, it's probably overkill. But if you're building something that needs to be reliable, something where "it works on my machine" isn't good enough, give it a shot.
+
+The learning curve is real. The bundle size is real. But so is the peace of mind when your code actually tells you what can go wrong before it goes wrong in production.

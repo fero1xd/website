@@ -1,14 +1,15 @@
 import { MDXComponents } from "mdx/types";
 import { Children, isValidElement, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
+import { highlightTransformer } from "./shiki-transformer";
 
 // Reusable MDX-style components
 const h2 = ({ children }: { children: ReactNode }) => (
-  <h2 className="text-xl font-bold tracking-tight mt-8 mb-4">{children}</h2>
+  <h2 className="text-xl font-bold mt-8 mb-4 tracking-tight">{children}</h2>
 );
 
 const p = ({ children }: { children: ReactNode }) => (
-  <p className="text-muted-foreground leading-relaxed mb-6">{children}</p>
+  <p className="text-foreground/80 mb-6 leading-8">{children}</p>
 );
 
 const ul = ({ children }: { children: ReactNode }) => (
@@ -18,7 +19,7 @@ const ul = ({ children }: { children: ReactNode }) => (
 );
 
 const li = ({ children }: { children: ReactNode }) => (
-  <li className="leading-relaxed">{children}</li>
+  <li className="leading-loose">{children}</li>
 );
 
 const blockquote = ({ children }: { children: ReactNode }) => (
@@ -27,11 +28,7 @@ const blockquote = ({ children }: { children: ReactNode }) => (
   </blockquote>
 );
 
-// const code = ({ children }: { children: ReactNode }) => (
-//   <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">
-//     {children}
-//   </code>
-// );
+
 
 async function pre({
   children,
@@ -55,7 +52,8 @@ async function pre({
 
     const html = await codeToHtml(String(codeElement?.props.children), {
       lang,
-      theme: "vesper",
+      theme: "kanagawa-dragon",
+      transformers: [highlightTransformer],
     });
 
     return <div dangerouslySetInnerHTML={{ __html: html }} />;

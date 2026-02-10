@@ -40,7 +40,7 @@ export default function BlogPage() {
           <section className="mt-12">
             <div>
               {posts.length > 0 ? (
-                posts.map((post) => <BlogCard key={post.slug} {...post} />)
+                posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((post) => <BlogCard key={post.slug} {...post} />)
               ) : (
                 <EmptyState
                   title="No blog posts yet"
