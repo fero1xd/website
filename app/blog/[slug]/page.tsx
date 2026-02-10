@@ -77,16 +77,16 @@ export default async function BlogPostPage({
           </Link>
           <article className="mt-8">
             <header>
-                <time className="text-sm font-mono text-muted-foreground">
-                  {new Date(post.date).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-                <h1 className="mt-2 text-3xl font-bold tracking-tight text-primary">
-                  {post.title}
-                </h1>
+              <time className="text-sm font-mono text-muted-foreground">
+                {new Date(post.date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </time>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-primary">
+                {post.title}
+              </h1>
             </header>
 
             <div className="mt-8 prose dark:prose-invert prose-h1:text-2xl min-w-full">
