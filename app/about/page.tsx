@@ -1,6 +1,20 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { EmptyState } from "@/components/empty-state";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "I'm Pranjal Butola, a 19 year old university student based in Uttarakhand, India.",
+  openGraph: {
+    title: "About · Pranjal Butola",
+    description:
+      "I'm Pranjal Butola, a 19 year old university student based in Uttarakhand, India.",
+    type: "website",
+    images: ["/api/og?title=About&description=Pranjal Butola"],
+  },
+};
 
 export default function AboutPage() {
   return (

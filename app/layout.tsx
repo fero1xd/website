@@ -9,7 +9,11 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https:${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : "http://localhost:3000",
+  ),
   title: {
     default: "Pranjal Butola",
     template: "%s · Pranjal Butola",
@@ -22,7 +26,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
     images: [
-      "/api/og?title=Pranjal%20Butola&description=Designer%20%26%20Developer",
+      `/api/og?title=Pranjal%20Butola&description=${encodeURIComponent("Computer science enthusiast and student.")}`,
     ],
   },
   twitter: {

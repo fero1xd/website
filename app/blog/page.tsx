@@ -7,15 +7,13 @@ import { posts } from "@/.velite";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description:
-    "Thoughts on design, development, and building thoughtful digital products.",
+  description: "My thoughts on tech and stuff.",
   openGraph: {
     title: "Blog · Pranjal Butola",
-    description:
-      "Essays and notes on design, development, and the craft of building digital products.",
+    description: "My thoughts on tech and stuff.",
     type: "website",
     images: [
-      "/api/og?title=Blog&description=Design%2C%20Development%20%26%20Craft",
+      `/api/og?title=Blog&description=${encodeURIComponent("My thoughts on tech and stuff.")}`,
     ],
   },
 };
@@ -40,7 +38,12 @@ export default function BlogPage() {
           <section className="mt-12">
             <div>
               {posts.length > 0 ? (
-                posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((post) => <BlogCard key={post.slug} {...post} />)
+                posts
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date).getTime() - new Date(a.date).getTime(),
+                  )
+                  .map((post) => <BlogCard key={post.slug} {...post} />)
               ) : (
                 <EmptyState
                   title="No blog posts yet"

@@ -43,7 +43,7 @@ export async function generateMetadata({
       type: "article",
       images: [
         {
-          url: `http://localhost:3000/api/og?title=${post.title}&description=${post.description}`,
+          url: `/api/og?title=${post.title}&description=${post.description}`,
         },
       ],
     },

@@ -3,6 +3,22 @@ import { Header } from "@/components/header";
 import { ProjectCard } from "@/components/project-card";
 import { EmptyState } from "@/components/empty-state";
 import { projects } from "@/lib/projects";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Projects",
+  description:
+    "Thoughts on design, development, and building thoughtful digital products.",
+  openGraph: {
+    title: "Projects · Pranjal Butola",
+    description:
+      "Thoughts on design, development, and building thoughtful digital products.",
+    type: "website",
+    images: [
+      `/api/og?title=Projects&description=${encodeURIComponent("Cool projects that I have been working on.")}`,
+    ],
+  },
+};
 
 export default function ProectsPage() {
   return (
