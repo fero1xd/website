@@ -10,7 +10,7 @@ export function Header() {
     <header className="border-b border-border/70 py-6 sm:py-7">
       <nav
         aria-label="Primary navigation"
-        className="flex items-center justify-between gap-5"
+        className="flex items-center justify-between gap-3 sm:gap-5"
       >
         <Link
           href="/"
@@ -27,12 +27,15 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <ul className="flex items-center gap-4 sm:gap-6">
+        <ul className="flex items-center gap-2 sm:gap-6">
           <li>
             <NavLink href="/blog">Writing</NavLink>
           </li>
           <li>
             <NavLink href="/projects">Work</NavLink>
+          </li>
+          <li>
+            <NavLink href="/readings">Readings</NavLink>
           </li>
           <li>
             <NavLink href="/about">About</NavLink>
