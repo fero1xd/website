@@ -1,60 +1,54 @@
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
-import { ProjectCard } from "@/components/project-card";
 import { EmptyState } from "@/components/empty-state";
+import { ProjectCard } from "@/components/project-card";
 import { projects } from "@/lib/projects";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Projects",
+  title: "Work",
   description:
-    "Thoughts on design, development, and building thoughtful digital products.",
+    "Selected projects and experiments in backend, systems, and developer tooling.",
   openGraph: {
-    title: "Projects · Pranjal Butola",
+    title: "Work · Pranjal Butola",
     description:
-      "Thoughts on design, development, and building thoughtful digital products.",
+      "Selected projects and experiments in backend, systems, and developer tooling.",
     type: "website",
     images: [
-      `/api/og?title=Projects&description=${encodeURIComponent("Cool projects that I have been working on.")}`,
+      `/api/og?title=Work&description=${encodeURIComponent(
+        "Selected projects and experiments in backend, systems, and developer tooling.",
+      )}`,
     ],
   },
 };
 
-export default function ProectsPage() {
+export default function ProjectsPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="max-w-3xl mx-auto w-full px-6 flex-1 flex flex-col">
-        <Header />
+    <>
+      <header className="max-w-2xl">
+        <p className="text-sm text-muted-foreground">Work</p>
+        <h1 className="mt-3 text-3xl font-medium tracking-tight">
+          Things I’m building.
+        </h1>
+        <p className="mt-4 leading-relaxed text-muted-foreground">
+          Small tools and experiments that help me understand systems by making
+          them.
+        </p>
+      </header>
 
-        <main className="flex-1 py-16">
-          <section>
-            <h1 className="text-2xl font-bold tracking-tight text-primary">
-              Projects
-            </h1>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
-              A collection of projects spanning libraries, applications, and
-              open-source contributions.
-            </p>
-          </section>
-
-          <section className="mt-12">
-            <div>
-              {projects.length > 0 ? (
-                projects.map((project) => (
-                  <ProjectCard key={project.title} {...project} />
-                ))
-              ) : (
-                <EmptyState
-                  title="No Projects"
-                  description="Ideally, you wouldn't be seeing this"
-                />
-              )}
-            </div>
-          </section>
-        </main>
-
-        <Footer />
-      </div>
-    </div>
+      <section
+        className="mt-10 border-t border-border"
+        aria-label="Selected projects"
+      >
+        {projects.length > 0 ? (
+          projects.map((project) => (
+            <ProjectCard key={project.title} {...project} />
+          ))
+        ) : (
+          <EmptyState
+            title="No public projects yet"
+            description="Current experiments are still being prepared for release."
+          />
+        )}
+      </section>
+    </>
   );
 }

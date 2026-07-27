@@ -4,34 +4,38 @@ export function ProjectCard({ title, description, year, href, tags }: Project) {
   return (
     <a
       href={href}
-      className="group block py-6 border-b border-border"
+      className="group block border-b border-border py-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       target="_blank"
+      rel="noopener noreferrer"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="text-base font-medium group-hover:text-primary transition-colors">
-            {title}
+      <article>
+        <div className="flex items-baseline justify-between gap-4">
+          <h3 className="font-medium text-foreground transition-colors group-hover:text-primary">
+            {title}{" "}
+            <span
+              aria-hidden="true"
+              className="inline-block text-muted-foreground transition-transform group-hover:-translate-y-px group-hover:translate-x-px"
+            >
+              ↗
+            </span>
+            <span className="sr-only"> (opens on GitHub in a new tab)</span>
           </h3>
-          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            {description}
-          </p>
-          {tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 text-sm border border-border rounded-full text-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
+          <span className="shrink-0 text-xs text-muted-foreground">{year}</span>
         </div>
-        <span className="text-sm text-muted-foreground font-mono shrink-0">
-          {year}
-        </span>
-      </div>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+        {tags.length > 0 ? (
+          <ul
+            className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+            aria-label="Technologies"
+          >
+            {tags.map((tag) => (
+              <li key={tag}>{tag}</li>
+            ))}
+          </ul>
+        ) : null}
+      </article>
     </a>
   );
 }

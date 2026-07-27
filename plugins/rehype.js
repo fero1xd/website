@@ -1,7 +1,7 @@
 import { visit } from "unist-util-visit";
 
 export default function rehypeParseCodeBlocks() {
-  // @ts-expect-error
+  // @ts-expect-error -- unified supplies the typed syntax tree at runtime.
   return (tree) => {
     visit(tree, "element", (node, _nodeIndex, parentNode) => {
       if (node.tagName === "code") {
@@ -9,8 +9,6 @@ export default function rehypeParseCodeBlocks() {
           parentNode.properties.language =
             node.properties.className[0]?.replace(/^language-/, "");
         }
-        console.log(node);
-        console.log(parentNode);
       }
     });
   };

@@ -1,61 +1,53 @@
-import type { Metadata } from "next";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { posts } from "@/.velite";
 import { BlogCard } from "@/components/blog-card";
 import { EmptyState } from "@/components/empty-state";
-import { posts } from "@/.velite";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "My thoughts on tech and stuff.",
+  title: "Writing",
+  description:
+    "Notes on backend engineering, systems, tools, and the occasional non-technical rabbit hole.",
   openGraph: {
-    title: "Blog · Pranjal Butola",
-    description: "My thoughts on tech and stuff.",
+    title: "Writing · Pranjal Butola",
+    description:
+      "Notes on backend engineering, systems, tools, and the occasional non-technical rabbit hole.",
     type: "website",
     images: [
-      `/api/og?title=Blog&description=${encodeURIComponent("My thoughts on tech and stuff.")}`,
+      `/api/og?title=Writing&description=${encodeURIComponent(
+        "Notes on backend engineering, systems, tools, and the occasional non-technical rabbit hole.",
+      )}`,
     ],
   },
 };
 
 export default function BlogPage() {
+  const sortedPosts = [...posts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="max-w-3xl mx-auto w-full px-6 flex-1 flex flex-col">
-        <Header />
+    <>
+      <header className="max-w-2xl">
+        <p className="text-sm text-muted-foreground">Writing</p>
+        <h1 className="mt-3 text-3xl font-medium tracking-tight">
+          Notes from the workbench.
+        </h1>
+        <p className="mt-4 leading-relaxed text-muted-foreground">
+          Technical deep dives, learning notes, and occasional thoughts beyond
+          software.
+        </p>
+      </header>
 
-        <main className="flex-1 py-16">
-          <section>
-            {/* Made heading bolder with font-bold */}
-            <h1 className="text-2xl font-bold tracking-tight text-primary">
-              Blog
-            </h1>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
-              Just writing about whatever I'm into at the moment.
-            </p>
-          </section>
-
-          <section className="mt-12">
-            <div>
-              {posts.length > 0 ? (
-                posts
-                  .sort(
-                    (a, b) =>
-                      new Date(b.date).getTime() - new Date(a.date).getTime(),
-                  )
-                  .map((post) => <BlogCard key={post.slug} {...post} />)
-              ) : (
-                <EmptyState
-                  title="No blog posts yet"
-                  description="Check back soon for thoughts on design and development"
-                />
-              )}
-            </div>
-          </section>
-        </main>
-
-        <Footer />
-      </div>
-    </div>
+      <section className="mt-10 border-t border-border" aria-label="All posts">
+        {sortedPosts.length > 0 ? (
+          sortedPosts.map((post) => <BlogCard key={post.slug} {...post} />)
+        ) : (
+          <EmptyState
+            title="No writing yet"
+            description="The first note is still on the workbench."
+          />
+        )}
+      </section>
+    </>
   );
 }

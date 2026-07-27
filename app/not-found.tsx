@@ -2,40 +2,28 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-24">
-      <div className="max-w-xl w-full text-center">
-        {/* Large 404 with accent color */}
-        <div className="mb-8">
-          <h1 className="text-9xl font-bold text-primary tracking-tighter mb-4">
-            404
-          </h1>
-          <p className="text-xl text-muted-foreground font-mono mb-8">
-            page not found.
-          </p>
-        </div>
-
-        {/* Description */}
-        <p className="text-base text-foreground mb-12 leading-relaxed max-w-md mx-auto">
-          looks like this route doesn't exist. maybe you took a wrong turn, or
-          the page wandered off somewhere.
-        </p>
-
-        {/* Navigation links */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link
-            href="/"
-            className="px-6 py-2 border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors rounded-md font-mono text-sm"
-          >
-            go home
-          </Link>
-          <Link
-            href="/blog"
-            className="px-6 py-2 text-muted-foreground hover:text-primary transition-colors font-mono text-sm"
-          >
-            explore blog
-          </Link>
-        </div>
+    <section className="py-12">
+      <p className="text-sm text-muted-foreground">404</p>
+      <h1 className="mt-3 text-3xl font-medium tracking-tight">
+        This page doesn’t exist.
+      </h1>
+      <p className="mt-4 max-w-lg leading-relaxed text-muted-foreground">
+        The link may be outdated, or the page may have moved.
+      </p>
+      <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+        <Link
+          href="/"
+          className="underline decoration-border underline-offset-4 transition-colors hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Go home
+        </Link>
+        <Link
+          href="/blog"
+          className="underline decoration-border underline-offset-4 transition-colors hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Browse writing
+        </Link>
       </div>
-    </div>
+    </section>
   );
 }

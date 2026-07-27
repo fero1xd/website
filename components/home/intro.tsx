@@ -1,41 +1,34 @@
-import { cn } from "@/lib/utils";
-import { CodeBracket, LogoGithub, LogoTwitterX } from "geist-icons";
-import { GeistPixelSquare } from "geist/font/pixel";
 import Link from "next/link";
 
 export function IntroSection() {
   return (
-    <section>
-      <h1 className={cn("text-2xl tracking-tight", GeistPixelSquare.className)}>
-        Hi, I am{" "}
-        <span className="text-primary">
-          Pranjal! <CodeBracket className="inline" />
-        </span>
-      </h1>
-      <p className="mt-4 text-muted-foreground leading-relaxed">
-        I am a 19 year old Computer Science enthusiast from India, currently
-        focused on backend engineering, but I enjoy exploring other technologies
-        as well. I also enjoy writing blog posts about what I'm learning along
-        the way.
+    <section aria-labelledby="intro-heading">
+      <p className="text-sm text-muted-foreground">
+        Computer science student · Backend engineering
       </p>
-      <div className="w-max flex items-start justify-center mt-4 gap-4">
+      <h1
+        id="intro-heading"
+        className="mt-4 max-w-xl text-3xl font-medium leading-[1.12] tracking-[-0.035em] text-foreground sm:text-4xl"
+      >
+        Building systems. Sharing the process.
+      </h1>
+      <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">
+        I’m Pranjal, based in Uttarakhand, India. I’m currently exploring
+        backend systems, infrastructure, and lower-level programming through
+        small, practical projects.
+      </p>
+      <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm">
         <Link
-          href="https://github.com/fero1xd"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-primary transition-colors"
-          aria-label="GitHub Profile"
+          href="/blog"
+          className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <LogoGithub size={18} />
+          Read my writing <span aria-hidden="true">→</span>
         </Link>
         <Link
-          href="https://x.com/pranjal_fxd_"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-primary transition-colors"
-          aria-label="Twitter Profile"
+          href="/projects"
+          className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <LogoTwitterX size={18} />
+          See what I’m building <span aria-hidden="true">→</span>
         </Link>
       </div>
     </section>

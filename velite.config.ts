@@ -1,40 +1,12 @@
-import { stat } from "fs/promises";
 import { defineConfig, defineSchema, s } from "velite";
-
-const timestamp = defineSchema(() =>
-  s
-    .custom<string | undefined>((i) => i === undefined || typeof i === "string")
-    .transform<string>(async (value, { meta, addIssue }) => {
-      if (value != null) {
-        addIssue({
-          fatal: false,
-          code: "custom",
-          message:
-            "`s.timestamp()` schema will resolve the file modified timestamp",
-        });
-      }
-
-      const stats = await stat(meta.path);
-      return stats.birthtime.toISOString();
-    })
-);
 
 const slug = defineSchema(() =>
   s
     .custom<string | undefined>((i) => i === undefined || typeof i === "string")
-    .transform<string>(async (value, { meta, addIssue }) => {
-      if (value != null) {
-        addIssue({
-          fatal: false,
-          code: "custom",
-          message:
-            "`s.timestamp()` schema will resolve the file modified timestamp",
-        });
-      }
-
-      const filename = meta.path.split("/").pop()!;
+    .transform<string>(async (_value, { meta }) => {
+      const filename = meta.path.replaceAll("\\", "/").split("/").pop()!;
       return filename.replace(/\.(md|mdx)$/, "");
-    })
+    }),
 );
 
 export default defineConfig({
@@ -47,7 +19,7 @@ export default defineConfig({
         description: s.string(),
 
         raw: s.raw(),
-        date: timestamp(),
+        date: s.isodate(),
         slug: slug(),
 
         tags: s.array(s.string()).optional(),

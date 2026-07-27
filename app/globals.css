@@ -49,7 +49,6 @@
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  /* updated accent to lime #e0fe56 */
   --primary: oklch(0.94 0.2 110);
   --primary-foreground: oklch(0.1 0 0);
   --secondary: oklch(0.2 0 0);
@@ -80,10 +79,8 @@
 }
 
 @theme inline {
-  /* Set Geist Mono as the main sans font for stylized look */
-  --font-sans: "Geist Mono", "Geist Mono Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  --font-geist-sans: "Geist", "Geist Sans Fallback";
+  --font-sans: var(--font-site-sans);
+  --font-mono: var(--font-site-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -131,6 +128,49 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-width: 320px;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+::view-transition-old(page) {
+  animation: 120ms ease-out both page-out;
+}
+
+::view-transition-new(page) {
+  animation: 180ms ease-out both page-in;
+}
+
+::view-transition-group(.post-title) {
+  animation-duration: 220ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 

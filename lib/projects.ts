@@ -12,7 +12,7 @@ export const projects: Project[] = [
   {
     title: "UTF-8 parser",
     description:
-      "A simple utf-8 parser written in C that parses unicode codepoints",
+      "A small UTF-8 parser in C that decodes Unicode code points.",
     tags: ["Misc", "C"],
     year: 2026,
     href: `${baseUrl}/utf8-parser`,
