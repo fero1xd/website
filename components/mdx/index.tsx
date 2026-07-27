@@ -50,9 +50,12 @@ async function pre({
       return <code {...props}>{children}</code>;
     }
 
+    const theme =
+      lang === "zig" ? "github-dark-default" : "kanagawa-dragon";
+
     const html = await codeToHtml(String(codeElement?.props.children), {
       lang,
-      theme: "kanagawa-dragon",
+      theme,
       transformers: [highlightTransformer],
     });
 

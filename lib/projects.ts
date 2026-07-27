@@ -10,6 +10,14 @@ const baseUrl = `https://github.com/fero1xd`;
 
 export const projects: Project[] = [
   {
+    title: "Neverend",
+    description:
+      "A Zig RTMP proxy that keeps an upstream broadcast alive through OBS disconnects by switching to fallback media.",
+    tags: ["Streaming", "Zig", "FFmpeg"],
+    year: 2026,
+    href: `${baseUrl}/neverend`,
+  },
+  {
     title: "UTF-8 parser",
     description:
       "A small UTF-8 parser in C that decodes Unicode code points.",

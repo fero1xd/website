@@ -180,6 +180,11 @@
   @apply overflow-x-auto border border-neutral-800 bg-[#111] my-4 rounded-none relative;
 }
 
+.prose pre.shiki {
+  /* Shiki themes set an inline background; keep the site's neutral code surface. */
+  background-color: #111 !important;
+}
+
 .prose code:not(pre code) {
   @apply px-1 py-0.5 text-sm border border-gray-700 rounded text-accent;
 }

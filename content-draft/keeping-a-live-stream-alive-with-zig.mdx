@@ -1,0 +1,258 @@
+---
+title: "Keeping a Live Stream Alive with Zig"
+description: "A small state machine, one monotonic clock, and a fallback source are enough to make stream disconnects much less dramatic."
+date: "2026-07-27"
+tags: ["zig", "streaming", "systems"]
+---
+
+A live stream has an awkward failure mode: the broadcaster can disappear while
+the broadcast itself is still expected to exist.
+
+OBS might restart, a laptop might change networks, or an encoder might stall for
+half a second. If the upstream connection follows every one of those failures,
+viewers see a frozen player or a stream that ends completely.
+
+While building Neverend, I started thinking about this as a scheduling problem
+instead of a networking problem. The proxy should keep producing one continuous
+program. Live video and fallback video are only sources that can feed it.
+
+## The shape of the system
+
+The useful part of the architecture is small:
+
+```text
+                         +------------------+
+OBS ---- RTMP ingest --->|                  |
+                         | program scheduler|---> encoder ---> RTMP upstream
+fallback file ---------->|                  |
+                         +------------------+
+                                  |
+                                  v
+                         one monotonic clock
+```
+
+The scheduler owns the output timeline. It can choose a different input without
+asking the output clock to start over.
+
+That separation gives us three useful rules:
+
+- The upstream publisher stays alive when OBS disconnects.
+- Fallback frames occupy real positions on the program timeline.
+- Returning to live input never moves time backwards.
+
+## Model failover as a state machine
+
+Switching to live as soon as a packet arrives is too optimistic. The first packet
+might be audio without video, an undecodable delta frame, or the start of another
+short-lived connection.
+
+Instead, live input has to prove that it is healthy:
+
+```text
+                       keyframe + A/V buffered
+                 +--------------------------------+
+                 |                                v
+  STARTUP ---> FALLBACK ---> RECOVERING --------> LIVE
+                  ^              |                  |
+                  |              | unhealthy        | stall
+                  +--------------+------------------+
+```
+
+A simplified Zig implementation can keep the policy explicit:
+
+```zig
+const std = @import("std");
+
+const Source = enum {
+    fallback,
+    live,
+};
+
+const LiveStatus = struct {
+    last_frame_ms: ?u64 = null,
+    has_keyframe: bool = false,
+    buffered_ms: u64 = 0,
+};
+
+const Switcher = struct {
+    source: Source = .fallback,
+    healthy_since_ms: ?u64 = null,
+
+    stall_grace_ms: u64 = 500,
+    recovery_healthy_ms: u64 = 300,
+    recovery_buffer_ms: u64 = 200,
+
+    pub fn select(
+        self: *Switcher,
+        now_ms: u64,
+        live: LiveStatus,
+    ) Source {
+        const is_fresh = if (live.last_frame_ms) |last_frame_ms|
+            now_ms -| last_frame_ms <= self.stall_grace_ms
+        else
+            false;
+
+        const is_healthy =
+            is_fresh and
+            live.has_keyframe and
+            live.buffered_ms >= self.recovery_buffer_ms;
+
+        if (!is_healthy) {
+            self.healthy_since_ms = null;
+            self.source = .fallback;
+            return self.source;
+        }
+
+        const healthy_since_ms = self.healthy_since_ms orelse start: {
+            self.healthy_since_ms = now_ms;
+            break :start now_ms;
+        };
+
+        if (now_ms - healthy_since_ms >= self.recovery_healthy_ms) {
+            self.source = .live;
+        }
+
+        return self.source;
+    }
+};
+```
+
+The important part is not the exact timeout values. It is that recovery has
+conditions. A keyframe makes the video decodable, a small buffer gives audio and
+video room to arrive together, and a healthy interval filters out connections
+that vanish immediately.
+
+The policy is also easy to test without opening a socket:
+
+```zig
+test "live must stay healthy before recovery" {
+    var switcher = Switcher{};
+
+    try std.testing.expectEqual(
+        Source.fallback,
+        switcher.select(1000, .{
+            .last_frame_ms = 1000,
+            .has_keyframe = true,
+            .buffered_ms = 250,
+        }),
+    );
+
+    try std.testing.expectEqual(
+        Source.live,
+        switcher.select(1300, .{
+            .last_frame_ms = 1300,
+            .has_keyframe = true,
+            .buffered_ms = 250,
+        }),
+    );
+
+    try std.testing.expectEqual(
+        Source.fallback,
+        switcher.select(1901, .{
+            .last_frame_ms = 1300,
+            .has_keyframe = true,
+            .buffered_ms = 250,
+        }),
+    );
+}
+```
+
+## Make time an output concern
+
+Input timestamps are observations, not commands.
+
+Each OBS connection can begin at timestamp zero. A fallback file can loop back
+to its first frame. Neither event should reset the outgoing program:
+
+```text
+source
+
+OBS #1       0s -------- 3s
+fallback                  0s -------- 10s -------- 0s ---
+OBS #2                                               0s --------
+
+program       0s -------- 3s -------- 13s -------- 20s -------->
+              time only moves forward
+```
+
+For constant-frame-rate video, the scheduler can derive timestamps from a frame
+counter:
+
+```zig
+const ProgramClock = struct {
+    video_index: u64 = 0,
+    audio_sample: u64 = 0,
+
+    pub fn nextVideoPts90k(self: *ProgramClock, fps: u64) u64 {
+        const pts = (self.video_index * 90_000) / fps;
+        self.video_index += 1;
+        return pts;
+    }
+
+    pub fn nextAudioPts90k(
+        self: *ProgramClock,
+        samples: u64,
+        sample_rate: u64,
+    ) u64 {
+        const pts = (self.audio_sample * 90_000) / sample_rate;
+        self.audio_sample += samples;
+        return pts;
+    }
+};
+```
+
+Now the selected source supplies pixels and samples, while the program clock
+supplies their final position. Source switches become ordinary scheduler
+decisions instead of timeline surgery.
+
+## Reconnect slow outputs at a clean boundary
+
+An upstream publisher can fail independently from the ingest side. Letting its
+queue grow forever only turns a network problem into a memory problem.
+
+```text
+encoder ---> [ bounded packet queue ] ---> publisher
+                    |
+                    +--- full ---> drop connection
+                                   wait for keyframe
+                                   start a fresh epoch
+```
+
+Starting the new connection at a keyframe means the receiver does not depend on
+video data it never saw. Timestamps can then be rebased for that connection while
+the internal program clock continues untouched.
+
+This is a useful systems pattern beyond streaming: keep the authoritative state
+continuous, and adapt unreliable consumers at the boundary.
+
+## What I would test
+
+The happy path is not the interesting part. I would build tests around the
+transitions:
+
+- OBS disconnects during a non-keyframe.
+- Live video returns before live audio.
+- The fallback file reaches its end and loops.
+- A timestamp crosses its integer wrap boundary.
+- The upstream queue fills while ingest remains healthy.
+- Several short OBS connections arrive before one stays healthy.
+
+For each case, the main invariant is the same: the next outgoing timestamp must
+be greater than or equal to the previous one, and a new publisher must begin on
+a decodable boundary.
+
+## The small idea underneath it
+
+At first, seamless failover sounds like a collection of media-specific tricks.
+Most of the design comes down to three ordinary systems ideas:
+
+1. Put ownership of time in one place.
+2. Describe source changes with an explicit state machine.
+3. Bound every queue that crosses an unreliable boundary.
+
+Zig works nicely here because the state and transitions stay visible. There is
+no hidden runtime deciding when work happens, and the tests can exercise the
+scheduler as plain data before FFmpeg or RTMP enters the picture.
+
+The stream keeps moving because the program is continuous, even when its inputs
+are not.

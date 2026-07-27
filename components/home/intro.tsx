@@ -10,12 +10,13 @@ export function IntroSection() {
         id="intro-heading"
         className="mt-4 max-w-xl text-3xl font-medium leading-[1.12] tracking-[-0.035em] text-foreground sm:text-4xl"
       >
-        Building systems. Sharing the process.
+        Hi, I’m Pranjal, a computer science student focused on{" "}
+        <span className="text-primary">backend engineering</span>.
       </h1>
       <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">
-        I’m Pranjal, based in Uttarakhand, India. I’m currently exploring
-        backend systems, infrastructure, and lower-level programming through
-        small, practical projects.
+        Based in Uttarakhand, India, I’m currently exploring backend systems,
+        infrastructure, and lower-level programming through small, practical
+        projects.
       </p>
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm">
         <Link
